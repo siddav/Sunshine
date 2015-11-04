@@ -1,9 +1,15 @@
 package com.untd.sunshine;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,10 +35,32 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+            if (id == R.id.action_settings) {
+                Toast toast = Toast.makeText(getApplicationContext(), "clicked on settings", Toast.LENGTH_SHORT);
+                toast.show();
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+            } else if (id == R.id.action_map) {
+                openPreferredLocationInMap();
+                return true;
+            }
 
         return super.onOptionsItemSelected(item);
+    }
+    private void openPreferredLocationInMap() {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String zipcode = pref.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
+        Log.i("ZIPCODE", zipcode + " fetched zip code");
+        Uri geoLocation = Uri.parse("geo:0,0?").buildUpon()
+                                .appendQueryParameter("q", zipcode)
+                               .build();
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(geoLocation);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+        startActivity(intent);
+        } else {
+          Log.d("ZIPCODE", "Couldn't call " + zipcode + ", no receiving apps installed!");
+          }
     }
 }
